@@ -3740,6 +3740,14 @@ end
 Sky("109960535444946")
 	end
 })
+f3xTab:AddButton({
+	Name = "Message",
+	Callback = function()
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local SilentRequest = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+SilentRequest:InvokeServer(";sm Pelusinguapo Hacked Dis Game!!")
+	end
+})
 
 
 
