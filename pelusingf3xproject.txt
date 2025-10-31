@@ -3632,6 +3632,114 @@ end
 Sky("76258024677112")
 	end
 })
+f3xTab:AddButton({
+	Name = "Skybox 3",
+	Callback = function()
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local SilentRequest = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+SilentRequest:InvokeServer(";time 6")
+SilentRequest:InvokeServer(";fogcolor black")
+		local player = game.Players.LocalPlayer
+
+local char = player.Character or player.CharacterAdded:Wait()
+
+local tool
+
+for _, v in player:GetDescendants() do
+
+    if v.Name == "SyncAPI" then
+
+        tool = v.Parent
+
+    end
+
+end
+
+for _, v in game.ReplicatedStorage:GetDescendants() do
+
+    if v.Name == "SyncAPI" then
+
+        tool = v.Parent
+
+    end
+
+end
+
+local remote = tool.SyncAPI.ServerEndpoint
+
+function _(args)
+
+    remote:InvokeServer(unpack(args))
+
+end
+
+function CreatePart(cf, parent)
+
+    _( {"CreatePart", "Normal", cf, parent} )
+
+end
+
+function SetAnchor(part, state)
+
+    _( {"SyncAnchor", { {["Part"] = part, ["Anchored"] = state} }} )
+
+end
+
+function AddMesh(part)
+
+    _( {"CreateMeshes", { {["Part"] = part} }} )
+
+end
+
+function SetMesh(part, meshid)
+
+    _( {"SyncMesh", { {["Part"] = part, ["MeshId"] = "rbxassetid://" .. meshid} }} )
+
+end
+
+function SetTexture(part, texid)
+
+    _( {"SyncMesh", { {["Part"] = part, ["TextureId"] = "rbxassetid://" .. texid} }} )
+
+end
+
+function MeshResize(part, size)
+
+    _( {"SyncMesh", { {["Part"] = part, ["Scale"] = size} }} )
+
+end
+
+function Sky(id)
+
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    local cf = hrp.CFrame
+
+    CreatePart(CFrame.new(cf.Position + Vector3.new(0, 6, 0)), workspace)
+
+    for _, v in workspace:GetDescendants() do
+
+        if v:IsA("BasePart") and v.Position == cf.Position + Vector3.new(0, 6, 0) then
+
+            SetAnchor(v, true)
+
+            AddMesh(v)
+
+            SetMesh(v, "111891702759441")
+
+            SetTexture(v, id)
+
+            MeshResize(v, Vector3.new(60000, 60000, 60000))
+
+        end
+
+    end
+
+end
+
+Sky("109960535444946")
+	end
+})
 
 
 
