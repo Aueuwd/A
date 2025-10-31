@@ -2615,7 +2615,7 @@ end
 
 SpawnFuckingWater(imported_model)
 
-task.delay(2, function()
+task.delay(5, function()
 pcall(function()
 local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
 RequestCommand:InvokeServer(";res all")
