@@ -3773,12 +3773,6 @@ coroutine.wrap(function()
             end)
         end
         task.wait(0.0)
-    end
-end)()
-    end
-end)
-
-coroutine.resume(msg)
 		
 	end
 })
