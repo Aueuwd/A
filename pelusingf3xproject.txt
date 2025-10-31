@@ -3870,6 +3870,33 @@ SilentRequest:InvokeServer(";volume inf")
 	end
 })
 songsTab:AddButton({
+	Name = "Trump The tank engine",
+	Callback = function()
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local SilentRequest = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+        SilentRequest:InvokeServer(";music 89293274845575 ;pitch 0.25 ;volume inf")
+
+	end
+})
+songsTab:AddButton({
+	Name = "Holy Fuck",
+	Callback = function()
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local SilentRequest = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+        SilentRequest:InvokeServer(";music 105819456196233 ;pitch 0.27 ;volume inf")
+
+	end
+})
+songsTab:AddButton({
+	Name = "N word",
+	Callback = function()
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local SilentRequest = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+        SilentRequest:InvokeServer(";music 1491842303 ;pitch 5 ;volume inf")
+
+	end
+})
+songsTab:AddButton({
 	Name = "No Music",
 	Callback = function()
 		local ReplicatedStorage = game:GetService("ReplicatedStorage")
