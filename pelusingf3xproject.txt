@@ -2478,7 +2478,6 @@ local char = player.Character or player.CharacterAdded:Wait()
 pcall(function()
 local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
 RequestCommand:InvokeServer(";btools me")
-RequestCommand:InvokeServer(";fogcolor black")
 wait(0.4)
 RequestCommand:InvokeServer(";punish all")
 end)
@@ -2615,7 +2614,7 @@ end
 
 SpawnFuckingWater(imported_model)
 
-task.delay(5, function()
+task.delay(7, function()
 pcall(function()
 local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
 RequestCommand:InvokeServer(";res all")
