@@ -4046,6 +4046,52 @@ songsTab:AddButton({
 	end
 })
 songsTab:AddButton({
+	Name = "Skeleton Dubstep",
+	Callback = function()
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local SilentRequest = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+        SilentRequest:InvokeServer(";music 110587373430189 ;pitch 0.125 ;volume inf")
+
+	end
+})
+songsTab:AddButton({
+	Name = "Epic Guy Idk",
+	Callback = function()
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local SilentRequest = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+        SilentRequest:InvokeServer(";music 80515722989681 ;pitch 0.22 ;volume inf")
+
+	end
+})
+songsTab:AddButton({
+	Name = "Lotsa spaghetti 90s",
+	Callback = function()
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local SilentRequest = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+        SilentRequest:InvokeServer(";music 99974358068663 ;pitch 0.14 ;volume inf")
+
+	end
+})
+songsTab:AddButton({
+	Name = "Racist Enimen",
+	Callback = function()
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local SilentRequest = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+        SilentRequest:InvokeServer(";music 94797081270081 ;pitch 0.2 ;volume inf")
+
+	end
+})
+songsTab:AddButton({
+	Name = "I'm killing n****rs",
+	Callback = function()
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local SilentRequest = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+        SilentRequest:InvokeServer(";music 72266196363368 ;pitch 0.27 ;volume inf")
+
+	end
+})
+
+songsTab:AddButton({
 	Name = "No Music",
 	Callback = function()
 		local ReplicatedStorage = game:GetService("ReplicatedStorage")
