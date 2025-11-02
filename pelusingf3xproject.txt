@@ -3902,6 +3902,124 @@ f3xTab:AddButton({
 	loadstring(game:HttpGet("https://rawscripts.net/raw/F3X-Workspace-script-that-lets-u-have-a-lsaer-knife-22875"))()
 	end
 })
+f3xTab:AddButton({
+	Name = "Brookhaven (Takes Long)",
+	Callback = function()
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local Workspace = game:GetService("Workspace")
+
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+
+pcall(function()
+	local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+	RequestCommand:InvokeServer(";btools me")
+	wait(0.4)
+	RequestCommand:InvokeServer(";punish all")
+end)
+
+local function getF3X()
+	for _, v in ipairs(player.Backpack:GetChildren()) do
+		if v:FindFirstChild("SyncAPI") then return v end
+	end
+	for _, v in ipairs(char:GetChildren()) do
+		if v:FindFirstChild("SyncAPI") then return v end
+	end
+	return nil
+end
+
+local f3x = getF3X()
+if not f3x then return end
+
+local syncapi = f3x.SyncAPI
+local serverendpoint = syncapi.ServerEndpoint
+
+local function fastInvoke(args)
+	task.spawn(function()
+		pcall(function()
+			serverendpoint:InvokeServer(unpack(args))
+		end)
+	end)
+end
+
+local function deletePart(part)
+	fastInvoke({"Remove", {part}})
+end
+
+for _, obj in ipairs(Workspace:GetDescendants()) do
+	if obj:IsA("BasePart") or obj:IsA("UnionOperation") or obj:IsA("Model") then
+		task.spawn(function()
+			pcall(function() deletePart(obj) end)
+		end)
+	end
+end
+
+task.wait(3)
+
+local model_id = "12090119957"
+local imported_model = game:GetObjects("rbxassetid://" .. model_id)[1]
+if not imported_model then return end
+
+imported_model.Parent = Lighting
+local destination = Workspace
+local f3x_name = "Building Tools"
+
+task.delay(15, function()
+	if imported_model then
+		imported_model:Destroy()
+	end
+end)
+
+local function f3xBuildPart(fake_part)
+	local sync = player.Backpack:FindFirstChild(f3x_name).SyncAPI.ServerEndpoint
+	local partType =
+		fake_part:IsA("WedgePart") and "Wedge"
+		or fake_part:IsA("Seat") and "Seat"
+		or fake_part:IsA("VehicleSeat") and "VehicleSeat"
+		or fake_part:IsA("TrussPart") and "Truss"
+		or fake_part:IsA("SpawnLocation") and "Spawn"
+		or fake_part.Shape == Enum.PartType.Block and "Normal"
+		or fake_part.Shape == Enum.PartType.Ball and "Ball"
+		or fake_part.Shape == Enum.PartType.Cylinder and "Cylinder"
+
+	local created = sync:InvokeServer("CreatePart", partType, fake_part.CFrame, destination)
+	sync:InvokeServer("SyncResize", { { Part = created, CFrame = created.CFrame, Size = fake_part.Size } })
+	sync:InvokeServer("SyncColor", { { Part = created, Color = fake_part.Color, UnionColoring = true } })
+	sync:InvokeServer("SyncMaterial", { { Part = created, Material = fake_part.Material, Transparency = fake_part.Transparency } })
+	sync:InvokeServer("SyncCollision", { { Part = created, CanCollide = fake_part.CanCollide } })
+
+	for _, tex in ipairs(fake_part:GetChildren()) do
+		if tex:IsA("Texture") then
+			sync:InvokeServer("CreateTextures", { { Part = created, Face = tex.Face, TextureType = "Texture" } })
+			sync:InvokeServer("SyncTexture", { { Part = created, Face = tex.Face, TextureType = "Texture", StudsPerTileU = tex.StudsPerTileU, StudsPerTileV = tex.StudsPerTileV, Texture = tex.Texture, Transparency = tex.Transparency } })
+		elseif tex:IsA("Decal") then
+			sync:InvokeServer("CreateTextures", { { Part = created, Face = tex.Face, TextureType = "Decal" } })
+			sync:InvokeServer("SyncTexture", { { Part = created, Face = tex.Face, TextureType = "Decal", Texture = tex.Texture, Transparency = tex.Transparency } })
+		elseif tex:IsA("SpecialMesh") then
+			sync:InvokeServer("CreateMeshes", { { Part = created } })
+			sync:InvokeServer("SyncMesh", { { Part = created, MeshId = tex.MeshId, TextureId = tex.TextureId, Scale = tex.Scale } })
+		end
+	end
+end
+
+for _, part in ipairs(imported_model:GetDescendants()) do
+	if part:IsA("BasePart") then
+		task.spawn(function()
+			f3xBuildPart(part)
+		end)
+	end
+end
+
+task.delay(20, function()
+	pcall(function()
+		local RequestCommand = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+		RequestCommand:InvokeServer(";res all")
+	end)
+end)
+	end
+})
 
 
 
