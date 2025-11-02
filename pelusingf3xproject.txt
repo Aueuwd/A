@@ -4020,6 +4020,129 @@ task.delay(20, function()
 end)
 	end
 })
+f3xTab:AddButton({
+	Name = "Chicken Arms",
+	Callback = function()
+local RunService = game:GetService("RunService")    local Players = game:GetService("Players")
+
+     
+
+    local lp = Players.LocalPlayer
+
+    local char = lp.Character or lp.CharacterAdded:Wait()
+
+    local hum = char:WaitForChild("Humanoid")
+
+    local torso = char:WaitForChild("Torso")
+
+local tool = char:FindFirstChildOfClass("Tool")
+
+    if not tool then        for _, v in lp.Backpack:GetChildren() do
+
+            if v:IsA("Tool") then
+
+                tool = v
+
+                break
+
+            end
+
+        end
+
+    end
+
+     
+
+    if tool then
+
+        hum:EquipTool(tool)
+
+        task.delay(0.01, function()
+
+            hum:UnequipTools()
+
+        end)
+
+    end
+
+     
+
+    local server = tool and tool:FindFirstChild("SyncAPI") and tool.SyncAPI:FindFirstChild("ServerEndpoint")
+
+local larm = char:WaitForChild("Left Arm")
+
+    local rarm = char:WaitForChild("Right Arm")     
+
+    local idleAngles = Vector3.new(0,0,math.rad(-90))
+
+    local flapAmplitude = Vector3.new(0, 0, math.rad(30))
+
+    local flapSpeed = 25
+
+     
+
+    local targetL, targetR = larm.CFrame, rarm.CFrame
+
+RunService.RenderStepped:Connect(function(delta)
+
+        if not larm or not rarm then return end        local time = tick()
+
+        local flapX = math.sin(time * flapSpeed) * flapAmplitude.X
+
+        local flapY = math.sin(time * flapSpeed * 0.8) * flapAmplitude.Y
+
+        local flapZ = math.sin(time * flapSpeed * 0.6) * flapAmplitude.Z
+
+     
+
+        if hum.MoveDirection.Magnitude == 0 then  
+
+            targetL = torso.CFrame * CFrame.new(-1.9,0.5,0) * CFrame.Angles(idleAngles.X, idleAngles.Y, idleAngles.Z)  
+
+            targetR = torso.CFrame * CFrame.new(1.9,0.5,0) * CFrame.Angles(-idleAngles.X, -idleAngles.Y, -idleAngles.Z)  
+
+        else  
+
+            targetL = torso.CFrame * CFrame.new(-1.9,0.5,0) * CFrame.Angles(flapX, flapY, idleAngles.Z + flapZ)  
+
+            targetR = torso.CFrame * CFrame.new(1.9,0.5,0) * CFrame.Angles(-flapX, -flapY, -idleAngles.Z - flapZ)  
+
+        end  
+
+     
+
+        larm.CFrame = targetL  
+
+        rarm.CFrame = targetR
+
+    end)
+
+    
+
+    if server then
+
+        spawn(function()
+
+            while true do
+
+                if larm and rarm then
+
+                    server:InvokeServer("SyncMove", {{Part = larm, CFrame = larm.CFrame}})
+
+                    server:InvokeServer("SyncMove", {{Part = rarm, CFrame = rarm.CFrame}})
+
+                end
+
+                task.wait()
+
+            end
+
+        end)
+
+    end
+	
+	end
+})
 
 
 
