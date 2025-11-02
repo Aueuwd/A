@@ -3889,8 +3889,19 @@ task.delay(7, function()
 end)
 	end
 })
+f3xTab:AddButton({
+	Name = "Bomb Tool",
+	Callback = function()
+	loadstring(game:HttpGet("https://rawscripts.net/raw/Free-Btools-and-Admin-BOMB-TOOL-44087"))()
+	end
+})
 
-
+f3xTab:AddButton({
+	Name = "Knife f3x",
+	Callback = function()
+	loadstring(game:HttpGet("https://rawscripts.net/raw/F3X-Workspace-script-that-lets-u-have-a-lsaer-knife-22875"))()
+	end
+})
 
 
 
