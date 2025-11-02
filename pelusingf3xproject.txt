@@ -1,3 +1,4 @@
+-- fuck skids
 local RAINBOW_SPEED = 0.008
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
