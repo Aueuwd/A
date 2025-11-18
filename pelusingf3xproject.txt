@@ -1,4 +1,4 @@
--- fuck skids
+-- this gui is private if you somehow find ts and you are not peluso here you are a fucking skid
 local RAINBOW_SPEED = 0.008
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
