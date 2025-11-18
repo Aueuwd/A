@@ -6147,6 +6147,26 @@ songsTab:AddButton({
 
 	end
 })
+songsTab:AddButton({
+	Name = "2014 mario.exe",
+	Callback = function()
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local SilentRequest = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+        SilentRequest:InvokeServer(";music 108426430685406")
+SilentRequest:InvokeServer(";pitch 0.25")
+SilentRequest:InvokeServer(";volume inf")
+	end
+})
+songsTab:AddButton({
+	Name = "Majora Mask Reverse",
+	Callback = function()
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local SilentRequest = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+        SilentRequest:InvokeServer(";music 116552457534705")
+SilentRequest:InvokeServer(";pitch .1")
+SilentRequest:InvokeServer(";volume inf")
+	end
+})
 
 songsTab:AddButton({
 	Name = "No Music",
