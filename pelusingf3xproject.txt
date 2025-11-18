@@ -4144,6 +4144,1473 @@ RunService.RenderStepped:Connect(function(delta)
 	
 	end
 })
+f3xTab:AddButton({
+	Name = "Spin All",
+	Callback = function()
+		
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local SilentRequest = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+        SilentRequest:InvokeServer(";spin all 16")
+	end
+})
+f3xTab:AddButton({
+	Name = "World Tour Decal",
+	Callback = function()
+		local player = game.Players.LocalPlayer
+
+local char = player.Character or player.CharacterAdded:Wait()
+
+local tool
+
+for _, v in player:GetDescendants() do
+
+	if v.Name == "SyncAPI" then		tool = v.Parent
+
+	end
+
+end
+
+for _, v in game.ReplicatedStorage:GetDescendants() do
+
+	if v.Name == "SyncAPI" then
+
+		tool = v.Parent
+
+	end
+
+end
+
+local remote = tool.SyncAPI.ServerEndpoint
+
+function _(args)
+
+	remote:InvokeServer(unpack(args))
+
+end
+
+function SetCollision(part, boolean)
+
+	local args = {
+
+		"SyncCollision",
+
+		{
+
+			{
+
+				Part = part,
+
+				CanCollide = boolean
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SetAnchor(boolean, part)
+
+	local args = {
+
+		"SyncAnchor",
+
+		{
+
+			{
+
+				Part = part,
+
+				Anchored = boolean
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function CreatePart(cf, parent)
+
+	local args = {
+
+		"CreatePart",
+
+		"Normal",
+
+		cf,
+
+		parent
+
+	}
+
+	_(args)
+
+end
+
+function DestroyPart(part)
+
+	local args = {
+
+		"Remove",
+
+		{ part }
+
+	}
+
+	_(args)
+
+end
+
+function MovePart(part, cf)
+
+	local args = {
+
+		"SyncMove",
+
+		{
+
+			{
+
+				Part = part,
+
+				CFrame = cf
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function Resize(part, size, cf)
+
+	local args = {
+
+		"SyncResize",
+
+		{
+
+			{
+
+				Part = part,
+
+				CFrame = cf,
+
+				Size = size
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function AddMesh(part)
+
+	local args = {
+
+		"CreateMeshes",
+
+		{
+
+			{ Part = part }
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SetMesh(part, meshid)
+
+	local args = {
+
+		"SyncMesh",
+
+		{
+
+			{
+
+				Part = part,
+
+				MeshId = "rbxassetid://" .. meshid
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SetTexture(part, texid)
+
+	local args = {
+
+		"SyncMesh",
+
+		{
+
+			{
+
+				Part = part,
+
+				TextureId = "rbxassetid://" .. texid
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SetName(part, name)
+
+	local args = {
+
+		"SetName",
+
+		{ part },
+
+		name
+
+	}
+
+	_(args)
+
+end
+
+function MeshResize(part, size)
+
+	local args = {
+
+		"SyncMesh",
+
+		{
+
+			{
+
+				Part = part,
+
+				Scale = size
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function Weld(part1, part2, lead)
+
+	local args = {
+
+		"CreateWelds",
+
+		{ part1, part2 },
+
+		lead
+
+	}
+
+	_(args)
+
+end
+
+function SetLocked(part, boolean)
+
+	local args = {
+
+		"SetLocked",
+
+		{ part },
+
+		boolean
+
+	}
+
+	_(args)
+
+end
+
+function SetTrans(part, transparency)
+
+	local args = {
+
+		"SyncMaterial",
+
+		{
+
+			{
+
+				Part = part,
+
+				Transparency = transparency
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function CreateSpotlight(part)
+
+	local args = {
+
+		"CreateLights",
+
+		{
+
+			{
+
+				Part = part,
+
+				LightType = "SpotLight"
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SyncLighting(part, brightness)
+
+	local args = {
+
+		"SyncLighting",
+
+		{
+
+			{
+
+				Part = part,
+
+				LightType = "SpotLight",
+
+				Brightness = brightness
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function Color(part, color)
+
+	local args = {
+
+		"SyncColor",
+
+		{
+
+			{
+
+				Part = part,
+
+				Color = color,
+
+				UnionColoring = false
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SpawnDecal(part, side)
+
+	local args = {
+
+		"CreateTextures",
+
+		{
+
+			{
+
+				Part = part,
+
+				Face = side,
+
+				TextureType = "Decal"
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function AddDecal(part, asset, side)
+
+	local args = {
+
+		"SyncTexture",
+
+		{
+
+			{
+
+				Part = part,
+
+				Face = side,
+
+				TextureType = "Decal",
+
+				Texture = "rbxassetid://" .. asset
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function spam(id)
+
+	for _, v in workspace:GetDescendants() do
+
+		if v:IsA("BasePart") then
+
+			spawn(function()
+
+				SetLocked(v, false)
+
+				for _, side in ipairs(Enum.NormalId:GetEnumItems()) do
+
+					SpawnDecal(v, side)
+
+					AddDecal(v, id, side)
+
+				end
+
+			end)
+
+		end
+
+	end
+
+end
+
+spam("97074852938045")
+	end
+})
+f3xTab:AddButton({
+	Name = "Pelusing was here decal",
+	Callback = function()
+		local player = game.Players.LocalPlayer
+
+local char = player.Character or player.CharacterAdded:Wait()
+
+local tool
+
+for _, v in player:GetDescendants() do
+
+	if v.Name == "SyncAPI" then		tool = v.Parent
+
+	end
+
+end
+
+for _, v in game.ReplicatedStorage:GetDescendants() do
+
+	if v.Name == "SyncAPI" then
+
+		tool = v.Parent
+
+	end
+
+end
+
+local remote = tool.SyncAPI.ServerEndpoint
+
+function _(args)
+
+	remote:InvokeServer(unpack(args))
+
+end
+
+function SetCollision(part, boolean)
+
+	local args = {
+
+		"SyncCollision",
+
+		{
+
+			{
+
+				Part = part,
+
+				CanCollide = boolean
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SetAnchor(boolean, part)
+
+	local args = {
+
+		"SyncAnchor",
+
+		{
+
+			{
+
+				Part = part,
+
+				Anchored = boolean
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function CreatePart(cf, parent)
+
+	local args = {
+
+		"CreatePart",
+
+		"Normal",
+
+		cf,
+
+		parent
+
+	}
+
+	_(args)
+
+end
+
+function DestroyPart(part)
+
+	local args = {
+
+		"Remove",
+
+		{ part }
+
+	}
+
+	_(args)
+
+end
+
+function MovePart(part, cf)
+
+	local args = {
+
+		"SyncMove",
+
+		{
+
+			{
+
+				Part = part,
+
+				CFrame = cf
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function Resize(part, size, cf)
+
+	local args = {
+
+		"SyncResize",
+
+		{
+
+			{
+
+				Part = part,
+
+				CFrame = cf,
+
+				Size = size
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function AddMesh(part)
+
+	local args = {
+
+		"CreateMeshes",
+
+		{
+
+			{ Part = part }
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SetMesh(part, meshid)
+
+	local args = {
+
+		"SyncMesh",
+
+		{
+
+			{
+
+				Part = part,
+
+				MeshId = "rbxassetid://" .. meshid
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SetTexture(part, texid)
+
+	local args = {
+
+		"SyncMesh",
+
+		{
+
+			{
+
+				Part = part,
+
+				TextureId = "rbxassetid://" .. texid
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SetName(part, name)
+
+	local args = {
+
+		"SetName",
+
+		{ part },
+
+		name
+
+	}
+
+	_(args)
+
+end
+
+function MeshResize(part, size)
+
+	local args = {
+
+		"SyncMesh",
+
+		{
+
+			{
+
+				Part = part,
+
+				Scale = size
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function Weld(part1, part2, lead)
+
+	local args = {
+
+		"CreateWelds",
+
+		{ part1, part2 },
+
+		lead
+
+	}
+
+	_(args)
+
+end
+
+function SetLocked(part, boolean)
+
+	local args = {
+
+		"SetLocked",
+
+		{ part },
+
+		boolean
+
+	}
+
+	_(args)
+
+end
+
+function SetTrans(part, transparency)
+
+	local args = {
+
+		"SyncMaterial",
+
+		{
+
+			{
+
+				Part = part,
+
+				Transparency = transparency
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function CreateSpotlight(part)
+
+	local args = {
+
+		"CreateLights",
+
+		{
+
+			{
+
+				Part = part,
+
+				LightType = "SpotLight"
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SyncLighting(part, brightness)
+
+	local args = {
+
+		"SyncLighting",
+
+		{
+
+			{
+
+				Part = part,
+
+				LightType = "SpotLight",
+
+				Brightness = brightness
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function Color(part, color)
+
+	local args = {
+
+		"SyncColor",
+
+		{
+
+			{
+
+				Part = part,
+
+				Color = color,
+
+				UnionColoring = false
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SpawnDecal(part, side)
+
+	local args = {
+
+		"CreateTextures",
+
+		{
+
+			{
+
+				Part = part,
+
+				Face = side,
+
+				TextureType = "Decal"
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function AddDecal(part, asset, side)
+
+	local args = {
+
+		"SyncTexture",
+
+		{
+
+			{
+
+				Part = part,
+
+				Face = side,
+
+				TextureType = "Decal",
+
+				Texture = "rbxassetid://" .. asset
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function spam(id)
+
+	for _, v in workspace:GetDescendants() do
+
+		if v:IsA("BasePart") then
+
+			spawn(function()
+
+				SetLocked(v, false)
+
+				for _, side in ipairs(Enum.NormalId:GetEnumItems()) do
+
+					SpawnDecal(v, side)
+
+					AddDecal(v, id, side)
+
+				end
+
+			end)
+
+		end
+
+	end
+
+end
+
+spam("140352712201426")
+	end
+})
+f3xTab:AddButton({
+	Name = "Skeletons Decal",
+	Callback = function()
+		local player = game.Players.LocalPlayer
+
+local char = player.Character or player.CharacterAdded:Wait()
+
+local tool
+
+for _, v in player:GetDescendants() do
+
+	if v.Name == "SyncAPI" then		tool = v.Parent
+
+	end
+
+end
+
+for _, v in game.ReplicatedStorage:GetDescendants() do
+
+	if v.Name == "SyncAPI" then
+
+		tool = v.Parent
+
+	end
+
+end
+
+local remote = tool.SyncAPI.ServerEndpoint
+
+function _(args)
+
+	remote:InvokeServer(unpack(args))
+
+end
+
+function SetCollision(part, boolean)
+
+	local args = {
+
+		"SyncCollision",
+
+		{
+
+			{
+
+				Part = part,
+
+				CanCollide = boolean
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SetAnchor(boolean, part)
+
+	local args = {
+
+		"SyncAnchor",
+
+		{
+
+			{
+
+				Part = part,
+
+				Anchored = boolean
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function CreatePart(cf, parent)
+
+	local args = {
+
+		"CreatePart",
+
+		"Normal",
+
+		cf,
+
+		parent
+
+	}
+
+	_(args)
+
+end
+
+function DestroyPart(part)
+
+	local args = {
+
+		"Remove",
+
+		{ part }
+
+	}
+
+	_(args)
+
+end
+
+function MovePart(part, cf)
+
+	local args = {
+
+		"SyncMove",
+
+		{
+
+			{
+
+				Part = part,
+
+				CFrame = cf
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function Resize(part, size, cf)
+
+	local args = {
+
+		"SyncResize",
+
+		{
+
+			{
+
+				Part = part,
+
+				CFrame = cf,
+
+				Size = size
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function AddMesh(part)
+
+	local args = {
+
+		"CreateMeshes",
+
+		{
+
+			{ Part = part }
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SetMesh(part, meshid)
+
+	local args = {
+
+		"SyncMesh",
+
+		{
+
+			{
+
+				Part = part,
+
+				MeshId = "rbxassetid://" .. meshid
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SetTexture(part, texid)
+
+	local args = {
+
+		"SyncMesh",
+
+		{
+
+			{
+
+				Part = part,
+
+				TextureId = "rbxassetid://" .. texid
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SetName(part, name)
+
+	local args = {
+
+		"SetName",
+
+		{ part },
+
+		name
+
+	}
+
+	_(args)
+
+end
+
+function MeshResize(part, size)
+
+	local args = {
+
+		"SyncMesh",
+
+		{
+
+			{
+
+				Part = part,
+
+				Scale = size
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function Weld(part1, part2, lead)
+
+	local args = {
+
+		"CreateWelds",
+
+		{ part1, part2 },
+
+		lead
+
+	}
+
+	_(args)
+
+end
+
+function SetLocked(part, boolean)
+
+	local args = {
+
+		"SetLocked",
+
+		{ part },
+
+		boolean
+
+	}
+
+	_(args)
+
+end
+
+function SetTrans(part, transparency)
+
+	local args = {
+
+		"SyncMaterial",
+
+		{
+
+			{
+
+				Part = part,
+
+				Transparency = transparency
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function CreateSpotlight(part)
+
+	local args = {
+
+		"CreateLights",
+
+		{
+
+			{
+
+				Part = part,
+
+				LightType = "SpotLight"
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SyncLighting(part, brightness)
+
+	local args = {
+
+		"SyncLighting",
+
+		{
+
+			{
+
+				Part = part,
+
+				LightType = "SpotLight",
+
+				Brightness = brightness
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function Color(part, color)
+
+	local args = {
+
+		"SyncColor",
+
+		{
+
+			{
+
+				Part = part,
+
+				Color = color,
+
+				UnionColoring = false
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function SpawnDecal(part, side)
+
+	local args = {
+
+		"CreateTextures",
+
+		{
+
+			{
+
+				Part = part,
+
+				Face = side,
+
+				TextureType = "Decal"
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function AddDecal(part, asset, side)
+
+	local args = {
+
+		"SyncTexture",
+
+		{
+
+			{
+
+				Part = part,
+
+				Face = side,
+
+				TextureType = "Decal",
+
+				Texture = "rbxassetid://" .. asset
+
+			}
+
+		}
+
+	}
+
+	_(args)
+
+end
+
+function spam(id)
+
+	for _, v in workspace:GetDescendants() do
+
+		if v:IsA("BasePart") then
+
+			spawn(function()
+
+				SetLocked(v, false)
+
+				for _, side in ipairs(Enum.NormalId:GetEnumItems()) do
+
+					SpawnDecal(v, side)
+
+					AddDecal(v, id, side)
+
+				end
+
+			end)
+
+		end
+
+	end
+
+end
+
+spam("83078379995969")
+	end
+})
 
 
 
