@@ -5758,6 +5758,46 @@ task.delay(9, function()
 end)
 	end
 })
+f3xTab:AddButton({
+	Name = "Spawn Bricks",
+	Callback = function()
+						local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+local tool
+for _, v in player:GetDescendants() do
+    if v.Name == "SyncAPI" then
+        tool = v.Parent
+    end
+end
+for _, v in game.ReplicatedStorage:GetDescendants() do
+    if v.Name == "SyncAPI" then
+        tool = v.Parent
+    end
+end
+
+local remote = tool.SyncAPI.ServerEndpoint
+function _(args)
+    remote:InvokeServer(unpack(args))
+end
+function CreatePart(cf, parent)
+    _( {"CreatePart", "Normal", cf, parent} )
+end
+function SetAnchor(part, state)
+    _( {"SyncAnchor", { {["Part"] = part, ["Anchored"] = state} }} )
+end
+for i = 1, 5 do
+    local brickCF = hrp.CFrame * CFrame.new(5 + (i - 1) * 5, 0, 0)
+    CreatePart(brickCF, workspace)
+    task.wait()
+    for _, v in workspace:GetDescendants() do
+        if v:IsA("BasePart") and (v.Position - brickCF.Position).Magnitude < 0.1 then
+            SetAnchor(v, false)
+        end
+    end
+end
+	end
+})
 
 
 
