@@ -83,7 +83,7 @@ notify("This game has f3x/you have f3x so everyone gonna see what you're doing."
 task.wait(3)
 notify("Press 'Z' to equip.")
 elseif not yeah then
-notify("LOL this game has no btools or f3x so this not gonna work here")
+notify("You dont have f3x nga")
 end
 
 local tool
