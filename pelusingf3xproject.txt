@@ -6082,6 +6082,161 @@ end)
 		
 	end
 })
+f3xTab:AddButton({
+	Name = "Grab Knife f3x",
+	Callback = function()
+	loadstring(game:HttpGet('https://raw.githubusercontent.com/Aueuwd/A/refs/heads/main/Knife_Script_F3X_V3_Or_V4_LEAK.txt'))()
+   end
+})
+f3xTab:AddButton({
+	Name = "RoXploit Tacos",
+	Callback = function()
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local backpack = player:WaitForChild("Backpack")
+
+local function getf3x()
+    for _, v in ipairs(backpack:GetChildren()) do
+        if v:FindFirstChild("SyncAPI") then return v end
+    end
+    for _, v in ipairs(char:GetChildren()) do
+        if v:FindFirstChild("SyncAPI") then return v end
+    end
+end
+
+local f3x = getf3x()
+if not f3x then
+    warn("No F3X found")
+    return
+end
+
+local endpoint = f3x.SyncAPI.ServerEndpoint
+
+local function fastInvoke(args)
+    task.spawn(function()
+        pcall(function()
+            endpoint:InvokeServer(unpack(args))
+        end)
+    end)
+end
+
+local function quickPart(t, cf, size, mat, col, trans, mid, mtex, mscale, extra)
+    task.spawn(function()
+        local p = endpoint:InvokeServer("CreatePart", t, cf, workspace.Terrain)
+        if not p then return end
+
+        fastInvoke({"SyncResize", {{
+            Part = p,
+            CFrame = cf,
+            Size = size
+        }}})
+
+        if mat then
+            fastInvoke({"SyncMaterial", {{Part = p, Material = mat}}})
+        end
+
+        if col then
+            fastInvoke({"SyncColor", {{Part = p, Color = col, UnionColoring = false}}})
+        end
+
+        if trans then
+            fastInvoke({"SyncMaterial", {{Part = p, Transparency = trans}}})
+        end
+
+        if mid or mtex or mscale then
+            fastInvoke({"CreateMeshes", {{Part = p}}})
+            if mid then
+                fastInvoke({"SyncMesh", {{Part = p, MeshId = "rbxassetid://" .. mid}}})
+            end
+            if mtex then
+                fastInvoke({"SyncMesh", {{Part = p, TextureId = "rbxassetid://" .. mtex}}})
+            end
+            if mscale then
+                fastInvoke({"SyncMesh", {{Part = p, Scale = mscale}}})
+            end
+        end
+
+        if extra then
+            extra(p)
+        end
+    end)
+end
+
+math.randomseed(tick())
+
+local TOAD_MESH = "14846869"
+local TOAD_TEX = "14846834"
+local TOAD_SCALE = Vector3.new(15, 15, 15)
+local TOAD_SIZE = Vector3.new(50, 50, 30)
+
+local function rainToads()
+    while true do
+        task.wait(0.01)
+
+        local c = player.Character
+        local hum = c and c:FindFirstChildOfClass("Humanoid")
+        local hrp = c and c:FindFirstChild("HumanoidRootPart")
+
+        if not (hum and hrp and hum.Health > 0) then
+            task.wait(1)
+            continue
+        end
+
+        local basePos = hrp.Position
+        local rx = math.random(-600, 600)
+        local rz = math.random(-600, 600)
+
+        local x = math.floor(basePos.X + rx)
+        local z = math.floor(basePos.Z + rz)
+        local y = basePos.Y + math.random(400, 800)
+
+        local cf = CFrame.new(x, y, z)
+
+        quickPart(
+            "Normal",
+            cf,
+            TOAD_SIZE,
+            Enum.Material.Plastic,
+            Color3.new(1,1,1),
+            0,
+            TOAD_MESH,
+            TOAD_TEX,
+            TOAD_SCALE,
+            function(p)
+                fastInvoke({"SyncAnchor", {{Part = p, Anchored = false}}})
+                fastInvoke({"SyncCollision", {{Part = p, CanCollide = true}}})
+                fastInvoke({"SetName", {{p}}, "Get trolled u fagz"})
+
+                p.Orientation = Vector3.new(0,0,0)
+
+                local s = Instance.new("Sound", p)
+                s.SoundId = "rbxassetid://153752123"
+                s.Volume = 0
+                s.PlayOnRemove = true
+                s:Destroy()
+            end
+        )
+    end
+end
+
+coroutine.wrap(rainToads)()
+   end
+})
+f3xTab:AddButton({
+	Name = "Realm (soon)",
+	Callback = function()
+	loadstring(game:HttpGet('https://raw.githubusercontent.com/Aueuwd/A/refs/heads/main/Knife_Script_F3X_V3_Or_V4_LEAK.txt'))()
+   end
+})
+f3xTab:AddButton({
+	Name = "Uzi my version",
+	Callback = function()
+	loadstring(game:HttpGet('https://raw.githubusercontent.com/Aueuwd/A/refs/heads/main/Knife_Script_F3X_V3_Or_V4_LEAK.txt'))()
+   end
+})
+
 
 
 
