@@ -6910,6 +6910,128 @@ end
 	end
 })
 f3xTab:AddButton({
+	Name = "Shedletsky",
+	Callback = function()
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SilentRequest = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+SilentRequest:InvokeServer(";time 6 ;fogcolor black")
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local backpack = player:WaitForChild("Backpack")
+
+local function getf3x()
+	for _, v in ipairs(backpack:GetChildren()) do
+		if v:FindFirstChild("SyncAPI") then return v end
+	end
+	for _, v in ipairs(char:GetChildren()) do
+		if v:FindFirstChild("SyncAPI") then return v end
+	end
+end
+
+local f3x = getf3x()
+if not f3x then
+	warn("No F3X / SyncAPI found")
+	return
+end
+
+local endpoint = f3x.SyncAPI.ServerEndpoint
+
+local function fastInvoke(args)
+	task.spawn(function()
+		pcall(function()
+			endpoint:InvokeServer(unpack(args))
+		end)
+	end)
+end
+
+local function quickPart(cf, size, extra)
+	task.spawn(function()
+		local p = endpoint:InvokeServer("CreatePart", "Normal", cf, workspace)
+		if not p then return end
+		fastInvoke({"SyncResize", {{
+			Part = p,
+			CFrame = cf,
+			Size = size
+		}}})
+		if extra then extra(p) end
+	end)
+end
+
+local function GiantSky(textureId)
+	local hrp = char:WaitForChild("HumanoidRootPart")
+	local pos = hrp.Position + Vector3.new(0, 6, 0)
+	quickPart(CFrame.new(pos), Vector3.new(5,5,5), function(p)
+		fastInvoke({"SyncAnchor", {{Part = p, Anchored = true}}})
+		fastInvoke({"CreateMeshes", {{Part = p}}})
+		fastInvoke({"SyncMesh", {{Part = p, MeshId = "rbxassetid://111891702759441"}}})
+		fastInvoke({"SyncMesh", {{Part = p, TextureId = "rbxassetid://" .. textureId}}})
+		fastInvoke({"SyncMesh", {{Part = p, Scale = Vector3.new(109888,109888,109888)}}})
+		fastInvoke({"SyncMesh", {{Part = p, VertexColor = Vector3.new(4,4,4)}}})
+		fastInvoke({"SyncCollision", {{Part = p, CanCollide = false}}})
+		fastInvoke({"SetLocked", {p}, true})
+	end)
+end
+
+local PARTICLE_TEXTURE = "85312612489831"
+local PARTICLE_SIZE = Vector3.new(5,5,0.01)
+
+local function spawnParticle(head)
+	local startCF = head.CFrame + Vector3.new(0,3,0)
+	quickPart(startCF, PARTICLE_SIZE, function(p)
+		fastInvoke({"SyncAnchor", {{Part = p, Anchored = true}}})
+		fastInvoke({"SyncCollision", {{Part = p, CanCollide = false}}})
+		fastInvoke({"SyncMaterial", {{Part = p, Transparency = 1}}})
+		fastInvoke({"CreateTextures", {{Part = p, Face = Enum.NormalId.Front, TextureType = "Decal"}}})
+		fastInvoke({"CreateTextures", {{Part = p, Face = Enum.NormalId.Back, TextureType = "Decal"}}})
+		fastInvoke({"SyncTexture", {{Part = p, Face = Enum.NormalId.Front, TextureType = "Decal", Texture = "rbxassetid://" .. PARTICLE_TEXTURE}}})
+		fastInvoke({"SyncTexture", {{Part = p, Face = Enum.NormalId.Back, TextureType = "Decal", Texture = "rbxassetid://" .. PARTICLE_TEXTURE}}})
+		task.spawn(function()
+			local baseY = startCF.Position.Y
+			for i = 1, 40 do
+				fastInvoke({"SyncResize", {{
+					Part = p,
+					CFrame = CFrame.new(
+						head.Position.X,
+						baseY + (i * 1.2),
+						head.Position.Z
+					),
+					Size = PARTICLE_SIZE
+				}}})
+				task.wait(0.08)
+			end
+			fastInvoke({"Remove", {p}})
+		end)
+	end)
+end
+
+local function particleLoop(plr)
+	while plr.Parent do
+		task.wait(0.5)
+		local c = plr.Character
+		local hum = c and c:FindFirstChildOfClass("Humanoid")
+		local head = c and c:FindFirstChild("Head")
+		if hum and head and hum.Health > 0 then
+			spawnParticle(head)
+		end
+	end
+end
+
+GiantSky("172423468")
+
+for _, plr in ipairs(Players:GetPlayers()) do
+	task.spawn(particleLoop, plr)
+end
+
+Players.PlayerAdded:Connect(function(plr)
+	task.spawn(particleLoop, plr)
+end)
+
+SilentRequest:InvokeServer(";music 105336676258720 ;pitch .175 ;volume inf")
+	end
+})
+f3xTab:AddButton({
 	Name = "Spin Current sky",
 	Callback = function()
 		-- MADE BY 1X9 BUT I MODIFIED SO IT SPINS THE CURRENT SKYBOX
