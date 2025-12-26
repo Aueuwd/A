@@ -7184,6 +7184,56 @@ end)
 print("Ok")
 end
 })
+f3xTab:AddButton({
+	Name = "Hd sky",
+	Callback = function()
+		local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+
+local tool
+for _, v in player:GetDescendants() do
+    if v.Name == "SyncAPI" then
+        tool = v.Parent
+    end
+end
+for _, v in game.ReplicatedStorage:GetDescendants() do
+    if v.Name == "SyncAPI" then
+        tool = v.Parent
+    end
+end
+
+local remote = tool.SyncAPI.ServerEndpoint
+local function _(args)
+    remote:InvokeServer(unpack(args))
+end
+
+-- table that tracks EXACT parts so we never apply twice
+local processed = {}
+
+local function SetVertexColorOnce(part, color)
+    if processed[part] then
+        return   -- already done, do NOTHING
+    end
+    processed[part] = true
+
+    _({"SyncMesh", {{Part = part, VertexColor = color}}})
+end
+
+local ids = {
+    ["rbxassetid://111891702759441"] = Vector3.new(3, 3, 3),
+    ["rbxassetid://8006679977"]      = Vector3.new(3, 3, 3)
+}
+
+for _, v in workspace:GetDescendants() do
+    if v:IsA("BasePart") then
+        local mesh = v:FindFirstChildOfClass("SpecialMesh")
+        if mesh and ids[mesh.MeshId] then
+            SetVertexColorOnce(v, ids[mesh.MeshId])
+        end
+    end
+end
+	end
+})
 
 
 
@@ -7194,7 +7244,7 @@ songsTab:AddButton({
 		local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local SilentRequest = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
         SilentRequest:InvokeServer(";music 120785124326826")
-SilentRequest:InvokeServer(";pitch 1.425")
+SilentReuest:InvokeServer(";pitch 1.425")
 SilentRequest:InvokeServer(";volume inf")
 	end
 })
