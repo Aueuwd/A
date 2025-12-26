@@ -7089,6 +7089,101 @@ RunService.Heartbeat:Connect(function(dt)
 end)
 	end
 })
+f3xTab:AddButton({
+	Name = "Baseplate aka fencing restore",
+	Callback = function()
+	local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local backpack = player.Backpack
+
+local SilentRequest = ReplicatedStorage:WaitForChild("HDAdminHDClient").Signals.RequestCommandSilent
+
+local function getF3X()
+    for _, v in ipairs(backpack:GetChildren()) do
+        if v:FindFirstChild("SyncAPI") then return v end
+    end
+    for _, v in ipairs(char:GetChildren()) do
+        if v:FindFirstChild("SyncAPI") then return v end
+    end
+    return nil
+end
+
+local f3x = getF3X()
+if not f3x then
+    warn("F3X not found")
+    return
+end
+
+local syncapi = f3x.SyncAPI
+local server = syncapi.ServerEndpoint
+
+local function invoke(args)
+    server:InvokeServer(unpack(args))
+end
+
+local function delete(part)
+    invoke({ "Remove", { part } })
+end
+
+for _, v in ipairs(Workspace:GetDescendants()) do
+    if v:IsA("BasePart") or v:IsA("UnionOperation") or v:IsA("Model") then
+        spawn(function()
+            delete(v)
+        end)
+    end
+end
+
+task.wait(1)
+
+local function resize(part, size, cf)
+    invoke({"SyncResize", {{Part = part, Size = size, CFrame = cf}}})
+end
+
+local function color(part, col)
+    invoke({"SyncColor", {{Part = part, Color = col, UnionColoring = false}}})
+end
+
+local function texture(part, face)
+    invoke({"CreateTextures", {{Part = part, Face = face, TextureType = "Texture"}}})
+    invoke({"SyncTexture", {{
+        Part = part,
+        Face = face,
+        TextureType = "Texture",
+        Texture = "rbxassetid://91338067899984",
+        StudsPerTileU = 2,
+        StudsPerTileV = 2
+    }}})
+end
+
+local function CreateBaseplate()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+    local cf = CFrame.new(
+        math.floor(hrp.Position.X),
+        math.floor(hrp.Position.Y) - 5,
+        math.floor(hrp.Position.Z)
+    )
+
+    local base = server:InvokeServer("CreatePart", "Normal", cf, Workspace)
+    resize(base, Vector3.new(800, 1, 800), cf)
+    color(base, Color3.fromRGB(71, 101, 76))
+    texture(base, Enum.NormalId.Top)
+
+    return base
+end
+
+CreateBaseplate()
+
+pcall(function()
+    SilentRequest:InvokeServer(";res all")
+end)
+
+print("Ok")
+end
+})
 
 
 
