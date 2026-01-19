@@ -1,6 +1,6 @@
 game:GetService("StarterGui"):SetCore("SendNotification",{
 Title = "k00pgui f3x remake by me",
-Text = "creds to yoid for the gui and uiand some stuff and me since i added new stuff", 
+Text = "creds to yoid for the gui and me since i added new stuff", 
 Duration = 6 
 })
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
