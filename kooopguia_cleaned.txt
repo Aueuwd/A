@@ -1,5 +1,3 @@
-local starterGui = game:GetService("StarterGui")
-
 game.ReplicatedStorage.RemoteEvent.OnClientEvent:Connect(function()
    starterGui:SetCore("SendNotifcation", (
             Title = "text here"
