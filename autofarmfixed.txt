@@ -1,0 +1,651 @@
+local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
+
+local Window = OrionLib:MakeWindow({
+Name = "MM2 Auto Farm",
+HidePremium = false,
+SaveConfig = true,
+ConfigFolder = "AutoFarmHub",
+IntroEnabled = true,
+IntroText = "Welcome to MM2 Auto Farm",
+Theme = {
+Main = Color3.fromRGB(30, 30, 60),
+Accent = Color3.fromRGB(0, 110, 255),
+Outline = Color3.fromRGB(70, 70, 120),
+FontColor = Color3.fromRGB(255, 255, 255)
+}
+})
+
+local CheatsTab = Window:MakeTab({ Name = "Auto Farm", Icon = "rbxassetid://4483345998" })
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
+local VirtualUser = game:GetService("VirtualUser")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local localplayer = Players.LocalPlayer
+
+local antiAfkEnabled = false
+local antiAfkConnection = nil
+
+local autoFarm = false
+local farmMode = "Normal"
+local avoidMurdererEnabled = false
+local coinAuraEnabled = false
+local auraRadius = 10
+local murdererAvoidRadius = 30
+local tweenSpeed = 15
+local teleportDistance = 200
+local autoRespawnEnabled = true -- New toggle for auto respawn
+
+local autoFarmTask = nil
+local activeTween = nil
+local visitedCoins = {}
+local deadUntilNextRound = false
+local humanoidDiedConn = nil
+local roundCoinCount = 0
+local roundActive = false -- Track if round is actually active
+local mapLoaded = false -- Track if map is loaded
+
+local deepUndergroundOffset = -12
+local pickupOffsetY = -3
+
+local function cancelActiveTween()
+    if activeTween then
+        pcall(function() activeTween:Cancel() end)
+        activeTween = nil
+    end
+end
+
+local function findActiveCoinContainer()
+    for _, child in ipairs(Workspace:GetChildren()) do
+        local coinContainer = child:FindFirstChild("CoinContainer")
+        if coinContainer then
+            return coinContainer, child
+        end
+    end
+    return nil, nil
+end
+
+-- Check if round has actually started (has coins AND game state is playing)
+local function isRoundActive()
+    -- Check if there are coins
+    local coinContainer = findActiveCoinContainer()
+    if not coinContainer then return false end
+    
+    -- Check if there's at least one coin with visual
+    for _, coin in ipairs(coinContainer:GetChildren()) do
+        if coin:IsA("BasePart") and coin:FindFirstChild("CoinVisual") then
+            -- Also check if game state is appropriate (you can adjust this based on MM2's specific game state)
+            local gameState = Workspace:FindFirstChild("GameState")
+            if gameState and gameState.Value == "Playing" then
+                return true
+            end
+            -- If no GameState object, just check coins
+            return true
+        end
+    end
+    return false
+end
+
+local function getAllCoins()
+    local coins = {}
+    local coinContainer = findActiveCoinContainer()
+    if coinContainer then
+        for _, obj in ipairs(coinContainer:GetChildren()) do
+            if obj:IsA("BasePart") and obj.Name == "Coin_Server" and not visitedCoins[obj] then
+                local hasVisual = obj:FindFirstChild("CoinVisual") ~= nil
+                if hasVisual then
+                    table.insert(coins, obj)
+                end
+            end
+        end
+    end
+    return coins
+end
+
+local function findNearestCoin(hrp)
+    local nearest = nil
+    local bestDist = math.huge
+    local coinContainer = findActiveCoinContainer()
+    
+    if coinContainer then
+        for _, coin in ipairs(coinContainer:GetChildren()) do
+            if coin:IsA("BasePart") and not visitedCoins[coin] then
+                local hasVisual = coin:FindFirstChild("CoinVisual") ~= nil
+                if hasVisual then
+                    local dist = (hrp.Position - coin.Position).Magnitude
+                    if dist < bestDist then
+                        bestDist = dist
+                        nearest = coin
+                    end
+                end
+            end
+        end
+    end
+    return nearest
+end
+
+local function allCoinsGone()
+    local coinContainer = findActiveCoinContainer()
+    if coinContainer then
+        for _, coin in ipairs(coinContainer:GetChildren()) do
+            if coin:IsA("BasePart") and coin:FindFirstChild("CoinVisual") then
+                return false
+            end
+        end
+    end
+    return true
+end
+
+local function forceServerSync(char)
+    if char and char.PrimaryPart then
+        char:PivotTo(CFrame.new(char.PrimaryPart.Position))
+        char.PrimaryPart.AssemblyLinearVelocity = Vector3.zero
+        char.PrimaryPart.AssemblyAngularVelocity = Vector3.zero
+    end
+end
+
+local function forceServerSyncDuringTween(hrp, duration)
+    local endTime = tick() + duration
+    task.spawn(function()
+        while tick() < endTime do
+            task.wait(0.1)
+            local char = localplayer.Character
+            if char and hrp then
+                char:PivotTo(hrp.CFrame)
+                hrp.AssemblyLinearVelocity = Vector3.zero
+            end
+        end
+    end)
+end
+
+local function isCoinValid(coin)
+    return coin and coin:IsDescendantOf(Workspace) and coin:IsA("BasePart") and typeof(coin.Position) == "Vector3"
+end
+
+local function findMurderer()
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr.Backpack:FindFirstChild("Knife") or (plr.Character and plr.Character:FindFirstChild("Knife")) then
+            return plr
+        end
+    end
+    return nil
+end
+
+local function isCoinSafe(coin)
+    if not avoidMurdererEnabled then return true end
+    local murderer = findMurderer()
+    if murderer and murderer.Character and murderer.Character:FindFirstChild("HumanoidRootPart") then
+        if (murderer.Character.HumanoidRootPart.Position - coin.Position).Magnitude < murdererAvoidRadius then
+            return false
+        end
+    end
+    return true
+end
+
+local function anchorHRP(hrp, state)
+    hrp.Anchored = state
+end
+
+local fakeFloor
+local function createInvisibleFloor(yLevel)
+    if fakeFloor and fakeFloor.Parent then fakeFloor:Destroy() end
+    fakeFloor = Instance.new("Part")
+    fakeFloor.Anchored = true
+    fakeFloor.CanCollide = true
+    fakeFloor.Size = Vector3.new(500, 1, 500)
+    fakeFloor.Transparency = 1
+    fakeFloor.Name = "UndergroundFloor"
+    fakeFloor.CFrame = CFrame.new(0, yLevel, 0)
+    fakeFloor.Parent = Workspace
+end
+
+local function moveInvisibleFloor(x, y, z)
+    if fakeFloor then
+        fakeFloor.CFrame = CFrame.new(x, y - 3, z)
+    end
+end
+
+local function removeInvisibleFloor()
+    if fakeFloor and fakeFloor.Parent then
+        fakeFloor:Destroy()
+        fakeFloor = nil
+    end
+end
+
+-- NEW FUNCTION: Kill character (auto respawn)
+local function killCharacter()
+    local char = localplayer.Character
+    if char then
+        local humanoid = char:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.Health = 0
+        end
+    end
+end
+
+local function doNormalFarm(hrp)
+    local coin = findNearestCoin(hrp)
+    if coin and isCoinSafe(coin) then
+        local dist = (hrp.Position - coin.Position).Magnitude
+        visitedCoins[coin] = true
+        
+        if dist >= teleportDistance then
+            hrp.CFrame = CFrame.new(coin.Position + Vector3.new(0,2,0))
+            forceServerSync(localplayer.Character)
+        else
+            local tweenTime = dist / tweenSpeed
+            cancelActiveTween()
+            activeTween = TweenService:Create(hrp, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), { CFrame = CFrame.new(coin.Position + Vector3.new(0,2,0)) })
+            activeTween:Play()
+            forceServerSyncDuringTween(hrp, tweenTime)
+            activeTween.Completed:Wait()
+            activeTween = nil
+            forceServerSync(localplayer.Character)
+        end
+        task.wait(0.15)
+    end
+end
+
+local function descendDeepUnderground(hrp)
+    anchorHRP(hrp, false)
+    local currentPos = hrp.Position
+    local targetY = currentPos.Y + deepUndergroundOffset
+    local targetPos = Vector3.new(currentPos.X, targetY, currentPos.Z)
+    createInvisibleFloor(targetY - 3)
+    local dist = (currentPos - targetPos).Magnitude
+    local tweenTime = dist / tweenSpeed
+    cancelActiveTween()
+    activeTween = TweenService:Create(hrp, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear), { CFrame = CFrame.new(targetPos) })
+    activeTween:Play()
+    forceServerSyncDuringTween(hrp, tweenTime)
+    activeTween.Completed:Wait()
+    activeTween = nil
+    forceServerSync(localplayer.Character)
+    anchorHRP(hrp, true)
+end
+
+local function doUndergroundContinuousFarmWithFloor(hrp)
+    local coin = findNearestCoin(hrp)
+    if coin and isCoinSafe(coin) then
+        visitedCoins[coin] = true
+        anchorHRP(hrp, false)
+        
+        local deepPos = Vector3.new(coin.Position.X, coin.Position.Y + deepUndergroundOffset, coin.Position.Z)
+        moveInvisibleFloor(deepPos.X, deepPos.Y, deepPos.Z)
+        local deepDist = (hrp.Position - deepPos).Magnitude
+        local deepTime = deepDist / tweenSpeed
+        cancelActiveTween()
+        activeTween = TweenService:Create(hrp, TweenInfo.new(deepTime, Enum.EasingStyle.Linear), { CFrame = CFrame.new(deepPos) })
+        activeTween:Play()
+        forceServerSyncDuringTween(hrp, deepTime)
+        activeTween.Completed:Wait()
+        activeTween = nil
+        forceServerSync(localplayer.Character)
+        
+        local pickupPos = Vector3.new(coin.Position.X, coin.Position.Y + pickupOffsetY, coin.Position.Z)
+        moveInvisibleFloor(pickupPos.X, pickupPos.Y, pickupPos.Z)
+        cancelActiveTween()
+        activeTween = TweenService:Create(hrp, TweenInfo.new(0.2, Enum.EasingStyle.Linear), { CFrame = CFrame.new(pickupPos) })
+        activeTween:Play()
+        forceServerSyncDuringTween(hrp, 0.2)
+        activeTween.Completed:Wait()
+        activeTween = nil
+        forceServerSync(localplayer.Character)
+        task.wait(0.15)
+        
+        cancelActiveTween()
+        activeTween = TweenService:Create(hrp, TweenInfo.new(0.2, Enum.EasingStyle.Linear), { CFrame = CFrame.new(deepPos) })
+        activeTween:Play()
+        forceServerSyncDuringTween(hrp, 0.2)
+        activeTween.Completed:Wait()
+        activeTween = nil
+        forceServerSync(localplayer.Character)
+        anchorHRP(hrp, true)
+    end
+end
+
+-- MODIFIED: Safe farm main with auto kill after collecting coins
+local function safeFarmMain(hrp)
+    descendDeepUnderground(hrp)
+    while autoFarm and not deadUntilNextRound do
+        -- Only farm if round is active
+        if isRoundActive() then
+            doUndergroundContinuousFarmWithFloor(hrp)
+        end
+        
+        -- Check if round ended (all coins gone)
+        if allCoinsGone() then
+            -- Auto kill character if enabled
+            if autoRespawnEnabled then
+                killCharacter()
+                deadUntilNextRound = true
+                cancelActiveTween()
+                visitedCoins = {}
+                break
+            else
+                visitedCoins = {}
+                task.wait(3)
+            end
+        end
+        task.wait(0.3)
+    end
+    removeInvisibleFloor()
+    anchorHRP(hrp, false)
+end
+
+-- MODIFIED: Main farm loop with proper round checking
+local function autoCoinFarm()
+    while autoFarm do
+        if deadUntilNextRound then
+            -- Wait until alive again
+            local char = localplayer.CharacterAdded:Wait()
+            task.wait(2) -- Wait for character to fully load
+            deadUntilNextRound = false
+            visitedCoins = {}
+            
+            -- Teleport to map after respawn
+            teleportToMap()
+        end
+        
+        local char = localplayer.Character or localplayer.CharacterAdded:Wait()
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        local humanoid = char:FindFirstChild("Humanoid")
+        
+        -- Setup death detection
+        if humanoid and not humanoidDiedConn then
+            humanoidDiedConn = humanoid.Died:Connect(function()
+                deadUntilNextRound = true
+                cancelActiveTween()
+                visitedCoins = {}
+            end)
+        end
+        
+        if hrp and humanoid and humanoid.Health > 0 then
+            -- Check if round is actually active before farming
+            if isRoundActive() then
+                if farmMode == "Safe" then 
+                    safeFarmMain(hrp) 
+                else 
+                    doNormalFarm(hrp) 
+                end
+            else
+                -- Wait for round to start
+                task.wait(1)
+            end
+        end
+        task.wait(0.3)
+    end
+    
+    -- Cleanup
+    if humanoidDiedConn then
+        humanoidDiedConn:Disconnect()
+        humanoidDiedConn = nil
+    end
+    removeInvisibleFloor()
+end
+
+local function coinAuraLoop()
+    while coinAuraEnabled do
+        task.wait(0.1)
+        local char = localplayer.Character
+        if not char then continue end
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then continue end
+        
+        local coin = findNearestCoin(hrp)
+        if coin and (coin.Position - hrp.Position).Magnitude <= auraRadius and isCoinSafe(coin) then
+            visitedCoins[coin] = true
+            hrp.CFrame = CFrame.new(coin.Position + Vector3.new(0,2,0))
+        end
+    end
+end
+
+local function getActiveMap()
+    for _, obj in ipairs(Workspace:GetChildren()) do
+        if obj:IsA("Model") and obj:FindFirstChild("Spawns") then
+            if not obj.Name:lower():find("lobby") then return obj end
+        end
+    end
+    return nil
+end
+
+local function teleportToMap()
+    local char = localplayer.Character or localplayer.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+    local mapModel = getActiveMap()
+    if not mapModel then return false end
+    local spawnsFolder = mapModel:FindFirstChild("Spawns")
+    if spawnsFolder then
+        local spawnPoints = spawnsFolder:GetChildren()
+        if #spawnPoints > 0 then
+            local chosenSpawn = spawnPoints[math.random(1, #spawnPoints)]
+            hrp.CFrame = CFrame.new(chosenSpawn.Position + Vector3.new(0,3,0))
+            forceServerSync(char)
+            return true
+        end
+    end
+    if mapModel.PrimaryPart then
+        hrp.CFrame = mapModel.PrimaryPart.CFrame + Vector3.new(0,5,0)
+        forceServerSync(char)
+        return true
+    end
+    return false
+end
+
+local function waitForMapSpawns(mapModel, timeout)
+    timeout = timeout or 10
+    local start = tick()
+    while tick() - start < timeout do
+        if mapModel:FindFirstChild("Spawns") and #mapModel.Spawns:GetChildren() > 0 then return true end
+        task.wait(0.3)
+    end
+    return false
+end
+
+local function startAutoFarm()
+    if autoFarmTask then
+        task.cancel(autoFarmTask)
+        autoFarmTask = nil
+    end
+    visitedCoins = {}
+    deadUntilNextRound = false
+    autoFarmTask = task.spawn(autoCoinFarm)
+end
+
+local function stopAutoFarm()
+    autoFarm = false
+    removeInvisibleFloor()
+    cancelActiveTween()
+    
+    if autoFarmTask then
+        task.cancel(autoFarmTask)
+        autoFarmTask = nil
+    end
+    
+    if humanoidDiedConn then
+        humanoidDiedConn:Disconnect()
+        humanoidDiedConn = nil
+    end
+    
+    local char = localplayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.Anchored = false
+        forceServerSync(char)
+    end
+end
+
+local function waitForActiveMap(timeout)
+    timeout = timeout or 30
+    local start = tick()
+    while tick() - start < timeout do
+        local map = getActiveMap()
+        if map and map:FindFirstChild("Spawns") and #map.Spawns:GetChildren() > 0 then
+            return map
+        end
+        task.wait(0.5)
+    end
+    return nil
+end
+
+local function teleportAndStart()
+    local mapModel = waitForActiveMap(15)
+    if mapModel then
+        local success = teleportToMap()
+        if success then
+            task.wait(1.2)
+            if autoFarm then
+                startAutoFarm()
+            end
+            return true
+        end
+    end
+    return false
+end
+
+local function enableAntiAfk()
+    if antiAfkConnection then return end
+    antiAfkConnection = localplayer.Idled:Connect(function()
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end)
+    OrionLib:MakeNotification({Name="Anti-AFK", Content="Anti-AFK Enabled!", Time=2})
+end
+
+local function disableAntiAfk()
+    if antiAfkConnection then
+        antiAfkConnection:Disconnect()
+        antiAfkConnection = nil
+        OrionLib:MakeNotification({Name="Anti-AFK", Content="Anti-AFK Disabled!", Time=2})
+    end
+end
+
+local antiFlingEnabled = false
+local antiFlingConn = nil
+
+local function enableAntiFling()
+    if antiFlingConn then return end
+    antiFlingConn = RunService.Heartbeat:Connect(function()
+        if not antiFlingEnabled then return end
+        local char = localplayer.Character
+        if not char then return end
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+        local vel = hrp.AssemblyLinearVelocity
+        if vel.Magnitude > 150 then
+            hrp.Anchored = true
+            task.delay(0.2, function()
+                if antiFlingEnabled and hrp then hrp.Anchored = false end
+            end)
+        end
+    end)
+    OrionLib:MakeNotification({Name="Anti-Fling", Content="Anti-Fling Enabled!", Time=2})
+end
+
+local function disableAntiFling()
+    if antiFlingConn then
+        antiFlingConn:Disconnect()
+        antiFlingConn = nil
+    end
+    OrionLib:MakeNotification({Name="Anti-Fling", Content="Anti-Fling Disabled!", Time=2})
+end
+
+CheatsTab:AddDropdown({
+    Name = "Auto Farm Mode",
+    Default = "Normal",
+    Options = {"Normal","Safe"},
+    Callback = function(opt) farmMode = opt end
+})
+
+CheatsTab:AddSlider({
+    Name = "Teleport Distance",
+    Range = {50, 350},
+    Increment = 10,
+    Suffix = " studs",
+    Default = 200,
+    Callback = function(v) teleportDistance = v end
+})
+
+CheatsTab:AddToggle({
+    Name = "Auto Respawn After Round",
+    Default = true,
+    Callback = function(state) autoRespawnEnabled = state end
+})
+
+CheatsTab:AddToggle({
+    Name = "Auto Coin Farm",
+    Default = false,
+    Callback = function(state)
+        if state then
+            autoFarm = true
+            local started = teleportAndStart()
+            if not started then
+                -- Will retry when map loads
+            end
+        else
+            stopAutoFarm()
+        end
+    end
+})
+
+CheatsTab:AddToggle({
+    Name = "Coin Aura",
+    Default = false,
+    Callback = function(state)
+        coinAuraEnabled = state
+        if state then task.spawn(coinAuraLoop) end
+    end
+})
+
+CheatsTab:AddToggle({
+    Name = "Avoid Murderer",
+    Default = false,
+    Callback = function(state) avoidMurdererEnabled = state end
+})
+
+CheatsTab:AddToggle({
+    Name = "Anti-AFK",
+    Default = false,
+    Callback = function(state)
+        antiAfkEnabled = state
+        if state then
+            enableAntiAfk()
+        else
+            disableAntiAfk()
+        end
+    end
+})
+
+CheatsTab:AddToggle({
+    Name = "Anti-Fling",
+    Default = false,
+    Callback = function(state)
+        antiFlingEnabled = state
+        if state then
+            enableAntiFling()
+        else
+            disableAntiFling()
+        end
+    end
+})
+
+Workspace.ChildAdded:Connect(function(child)
+    if not autoFarm then return end
+    if child:IsA("Model") and not child.Name:lower():find("lobby") then
+        task.spawn(function()
+            local spawnsReady = child:FindFirstChild("Spawns") and #child.Spawns:GetChildren() > 0
+            if not spawnsReady then spawnsReady = waitForMapSpawns(child,10) end
+            if spawnsReady and autoFarm then
+                teleportAndStart()
+            end
+        end)
+    end
+end)
+
+localplayer.CharacterAdded:Connect(function()
+    if autoFarm then
+        task.wait(1)
+        teleportAndStart()
+    end
+end)
