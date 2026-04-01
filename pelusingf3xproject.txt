@@ -7237,7 +7237,7 @@ end
 f3xTab:AddButton({
 	Name = "k00pgui f3x",
 	Callback = function()
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/Aueuwd/A/refs/heads/main/obfuscated.lua.txt"))()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/Aueuwd/A/refs/heads/main/k00pguif3x.txt"))()
 	end
 })
 
